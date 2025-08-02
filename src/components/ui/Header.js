@@ -24,7 +24,6 @@ const Header = ({ title }) => {
   return (
     <header className="flex w-full flex-col items-center justify-center bg-gradient-to-r from-blue-400 to-pink-400 py-6 shadow-lg">
       <div className="flex items-center gap-3">
-        <span className="text-4xl">🎉</span>
         <h1 className="text-3xl font-extrabold text-white drop-shadow">{title}</h1>
       </div>
       {currentPlayerName && (

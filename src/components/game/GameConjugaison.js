@@ -146,10 +146,10 @@ const GameConjugaison = () => {
   if (!question) return <div className="flex h-96 items-center justify-center">Chargement…</div>;
 
   return (
-    <main className="flex min-h-[70vh] flex-col items-center justify-center">
+    <main className="flex min-h-[70vh] flex-col items-center justify-center py-8">
       <div className="flex w-full max-w-lg flex-col gap-6">
-        <aside className="flex flex-1 flex-col items-center rounded-xl border border-blue-100 bg-white p-6 shadow-lg">
-          <h2 className="mb-4 text-center text-xl font-bold text-blue-700">Jeu en cours</h2>
+        <aside className="flex flex-1 flex-col items-center rounded-xl border border-blue-100 bg-white p-6 shadow-md">
+          <h2 className="mb-4 text-center text-xl font-bold text-blue-700">Partie en cours</h2>
           <div className="flex w-full flex-col gap-2 text-lg text-gray-700">
             <div>
               <span className="font-bold">Temps passé :</span> {formatTime(elapsedTime)}
@@ -178,7 +178,7 @@ const GameConjugaison = () => {
             </button>
           </div>
         </aside>
-        <section className="flex flex-1 flex-col items-center rounded-xl border border-blue-100 bg-white p-6 shadow-lg">
+        <section className="flex flex-1 flex-col items-center rounded-xl border border-blue-100 bg-white p-6 shadow-md">
           <h2 className="mb-4 text-center text-xl font-bold text-blue-700">Question {totalQuestions + 1}</h2>
           <h2 className="mb-4 text-center text-lg font-bold text-gray-800">
             Conjugue <span className="font-extrabold text-blue-600">&quot;{question.verbe}&quot;</span> <br />
@@ -204,13 +204,13 @@ const GameConjugaison = () => {
             />
             <button
               type="submit"
-              disabled={isChecking || answer.trim() === ''}
-              className="w-full rounded-lg bg-blue-500 py-3 text-lg font-bold text-white transition hover:bg-blue-600"
+              disabled={isChecking || feedback.length || answer.trim() === ''}
+              className="w-full rounded-lg bg-blue-500 py-3 text-lg font-bold text-white transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Valider
             </button>
           </form>
-          <p className="mt-2 text-center text-xl font-semibold">{feedback}&nbsp;</p>
+          <p className="mt-4 text-center text-xl font-semibold">{feedback}&nbsp;</p>
         </section>
       </div>
     </main>

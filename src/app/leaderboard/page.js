@@ -40,10 +40,10 @@ const LeaderboardPage = () => {
           </ol>
         )}
         <button
-          onClick={() => router.push('/')}
+          onClick={() => router.push('/game')}
           className="mt-8 w-full rounded-lg bg-blue-500 py-3 text-lg font-bold text-white transition hover:bg-blue-600"
         >
-          Retour à l&apos;accueil
+          Retour aux jeux
         </button>
       </section>
     </main>

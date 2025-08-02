@@ -12,7 +12,7 @@ const operationsList = [
 const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
 const generateQuestion = (enabledOps, digits) => {
-  const ops = operationsList.filter((op) => enabledOps[op.key]);
+  const ops = operationsList.filter((op) => enabledOps?.[op.key]);
   if (ops.length === 0) return null;
   const op = ops[getRandomInt(0, ops.length - 1)];
   let a, b, question, answer;
@@ -40,9 +40,12 @@ const generateQuestion = (enabledOps, digits) => {
       answer = a * b;
       break;
     case 'div':
-      b = getRandomInt(min, max);
-      answer = getRandomInt(min, max);
-      a = b * answer;
+      const divMin = digits === 'double' ? 2 : 1;
+      const divMax = digits === 'double' ? 10 : 9;
+
+      b = getRandomInt(divMin, divMax); // divisor
+      answer = getRandomInt(divMin, divMax); // quotient
+      a = b * answer; // dividend
       question = `${a} ÷ ${b}`;
       break;
     default:
@@ -99,10 +102,17 @@ const GameMathematiques = () => {
   };
 
   const handleToggleOp = (key) => {
-    setEnabledOps((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
+    setEnabledOps((prev) => {
+      const enabledCount = Object.values(prev).filter(Boolean).length;
+      if (prev[key] && enabledCount === 1) {
+        // Prevent disabling the last enabled operation
+        return prev;
+      }
+      return {
+        ...prev,
+        [key]: !prev[key],
+      };
+    });
   };
 
   const handleDigitsChange = (val) => setDigits(val);
@@ -133,10 +143,10 @@ const GameMathematiques = () => {
   };
 
   return (
-    <main className="flex min-h-[70vh] flex-col items-center justify-center">
+    <main className="flex min-h-[70vh] flex-col items-center justify-center py-8">
       <div className="flex w-full max-w-lg flex-col gap-6">
-        <aside className="flex flex-1 flex-col items-center rounded-xl border border-blue-100 bg-white p-6 shadow-lg">
-          <h2 className="mb-4 text-center text-xl font-bold text-blue-700">Jeu Mathématiques</h2>
+        <aside className="flex flex-1 flex-col items-center rounded-xl border border-blue-100 bg-white p-6 shadow-md">
+          <h2 className="mb-4 text-center text-xl font-bold text-blue-700">Partie en cours</h2>
           <div className="flex w-full flex-col gap-2 text-lg text-gray-700">
             <div>
               <span className="font-bold">Temps passé :</span> {formatTime(elapsedTime)}
@@ -188,7 +198,7 @@ const GameMathematiques = () => {
           </div>
         </aside>
         {question && (
-          <section className="flex flex-1 flex-col items-center rounded-xl border border-blue-100 bg-white p-6 shadow-lg">
+          <section className="flex flex-1 flex-col items-center rounded-xl border border-blue-100 bg-white p-6 shadow-md">
             <h2 className="mb-4 text-center text-xl font-bold text-blue-700">Question {totalQuestions + 1}</h2>
             <h2 className="mb-4 text-center text-lg font-bold text-gray-800">
               Résous : <span className="font-extrabold text-blue-600">{question.question}</span>
@@ -209,13 +219,13 @@ const GameMathematiques = () => {
               />
               <button
                 type="submit"
-                disabled={isChecking || userAnswer.trim() === ''}
-                className="w-full rounded-lg bg-blue-500 py-3 text-lg font-bold text-white transition hover:bg-blue-600"
+                disabled={isChecking || feedback.length || userAnswer.trim() === ''}
+                className="w-full rounded-lg bg-blue-500 py-3 text-lg font-bold text-white transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Valider
               </button>
             </form>
-            <p className="mt-2 text-center text-xl font-semibold">{feedback}&nbsp;</p>
+            <p className="mt-4 text-center text-xl font-semibold">{feedback}&nbsp;</p>
           </section>
         )}
       </div>
