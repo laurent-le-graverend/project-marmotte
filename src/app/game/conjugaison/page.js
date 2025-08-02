@@ -10,18 +10,18 @@ import Header from '@/components/ui/Header';
 import { getPlayerName } from '@/lib/storage';
 
 export default function GamePage() {
-	const router = useRouter();
+  const router = useRouter();
 
-	useEffect(() => {
-		const storedName = getPlayerName();
-		if (!storedName) router.push('/');
-	}, []);
+  useEffect(() => {
+    const storedName = getPlayerName();
+    if (!storedName) router.push('/');
+  }, []);
 
-	return (
-		<main className="flex min-h-screen flex-col justify-between">
-			<Header title="Jeu de Conjugaison" />
-			<GameConjugaison />
-			<Footer />
-		</main>
-	);
+  return (
+    <main className="flex min-h-screen flex-col justify-between">
+      <Header title="Jeu de Conjugaison" />
+      <GameConjugaison />
+      <Footer />
+    </main>
+  );
 }
