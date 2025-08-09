@@ -6,7 +6,7 @@ const Footer = () => {
   const router = useRouter();
 
   return (
-    <footer className="mt-8 flex w-full items-center justify-center gap-6 bg-gradient-to-r from-blue-200 to-pink-200 py-4 shadow-inner">
+    <footer className="mt-8 flex w-full items-center justify-center gap-6 border-t border-white/30 bg-white/80 py-4 shadow-inner backdrop-blur-md">
       <button
         onClick={() => router.push('/')}
         className="rounded-lg bg-blue-500 px-5 py-2 text-lg font-semibold text-white transition hover:bg-blue-600"

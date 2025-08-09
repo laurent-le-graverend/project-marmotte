@@ -148,7 +148,7 @@ const GameConjugaison = () => {
   return (
     <main className="flex min-h-[70vh] flex-col items-center justify-center py-8">
       <div className="flex w-full max-w-lg flex-col gap-6">
-        <aside className="flex flex-1 flex-col items-center rounded-xl border border-blue-100 bg-white p-6 shadow-md">
+        <aside className="flex flex-1 flex-col items-center rounded-xl border border-white/20 bg-white/95 p-6 shadow-md backdrop-blur-sm">
           <h2 className="mb-4 text-center text-xl font-bold text-blue-700">Partie en cours</h2>
           <div className="flex w-full flex-col gap-2 text-lg text-gray-700">
             <div>
@@ -178,7 +178,7 @@ const GameConjugaison = () => {
             </button>
           </div>
         </aside>
-        <section className="flex flex-1 flex-col items-center rounded-xl border border-blue-100 bg-white p-6 shadow-md">
+        <section className="flex flex-1 flex-col items-center rounded-xl border border-white/20 bg-white/95 p-6 shadow-md backdrop-blur-sm">
           <h2 className="mb-4 text-center text-xl font-bold text-blue-700">Question {totalQuestions + 1}</h2>
           <h2 className="mb-4 text-center text-lg font-bold text-gray-800">
             Conjugue <span className="font-extrabold text-blue-600">&quot;{question.verbe}&quot;</span> <br />

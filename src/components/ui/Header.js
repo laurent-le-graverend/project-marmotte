@@ -22,9 +22,9 @@ const Header = ({ title }) => {
   }, []);
 
   return (
-    <header className="flex w-full flex-col items-center justify-center bg-gradient-to-r from-blue-400 to-pink-400 py-6 shadow-lg">
+    <header className="flex w-full flex-col items-center justify-center border-b border-white/30 bg-white/80 py-6 shadow-lg backdrop-blur-md">
       <div className="flex items-center gap-3">
-        <h1 className="text-3xl font-extrabold text-white drop-shadow">{title}</h1>
+        <h1 className="text-3xl font-extrabold text-blue-600 drop-shadow">{title}</h1>
       </div>
       {currentPlayerName && (
         <span className="bg-opacity-60 mt-2 rounded-full bg-blue-500 px-4 py-1 text-lg font-semibold text-white">
