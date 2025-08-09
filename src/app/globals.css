@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --background: #ffffff;
@@ -12,17 +12,39 @@ body {
 }
 
 @keyframes jump {
-  0%, 10%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-20px); }
-  50% { transform: translateY(-28px) scale(1.1); }
-  70% { transform: translateY(-20px); }
-  90% { transform: translateY(0); }
+  0%,
+  10%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-20px);
+  }
+  50% {
+    transform: translateY(-28px) scale(1.1);
+  }
+  70% {
+    transform: translateY(-20px);
+  }
+  90% {
+    transform: translateY(0);
+  }
 }
 
 @keyframes roll {
-  0% { transform: rotate(0deg); }
-  25% { transform: rotate(90deg); }
-  50% { transform: rotate(180deg); }
-  75% { transform: rotate(270deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(90deg);
+  }
+  50% {
+    transform: rotate(180deg);
+  }
+  75% {
+    transform: rotate(270deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
