@@ -1,5 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
+import GameHUD from '@/components/ui/GameHUD';
+import useGameTimer from '@/hooks/useGameTimer';
 import { getScore, setScore } from '@/lib/storage';
 
 const operationsList = [
@@ -70,8 +72,9 @@ const GameMathematiques = () => {
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [incorrectAnswers, setIncorrectAnswers] = useState(0);
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const timerRef = useRef(null);
+
+  // Use the custom timer hook
+  const { elapsedTime, formatTime } = useGameTimer(question);
 
   useEffect(() => {
     setQuestion(generateQuestion(enabledOps, digits));
@@ -83,23 +86,6 @@ const GameMathematiques = () => {
     setIncorrectAnswers(0);
     setCurrentScore(0);
   }, [enabledOps, digits]);
-
-  useEffect(() => {
-    setElapsedTime(0);
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
-      setElapsedTime((prev) => prev + 1);
-    }, 1000);
-    return () => clearInterval(timerRef.current);
-  }, [question]);
-
-  const formatTime = (seconds) => {
-    const m = Math.floor(seconds / 60)
-      .toString()
-      .padStart(2, '0');
-    const s = (seconds % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-  };
 
   const handleToggleOp = (key) => {
     setEnabledOps((prev) => {
@@ -145,20 +131,13 @@ const GameMathematiques = () => {
   return (
     <main className="flex min-h-[70vh] flex-col items-center justify-center py-8">
       <div className="flex w-full max-w-lg flex-col gap-6">
-        <aside className="flex flex-1 flex-col items-center rounded-xl border border-white/20 bg-white/95 p-6 shadow-md backdrop-blur-sm">
-          <h2 className="mb-4 text-center text-xl font-bold text-blue-700">Partie en cours</h2>
-          <div className="flex w-full flex-col gap-2 text-lg text-gray-700">
-            <div>
-              <span className="font-bold">Temps passé :</span> {formatTime(elapsedTime)}
-            </div>
-            <div>
-              <span className="font-bold text-green-600">Réponses correctes :</span> {correctAnswers}
-            </div>
-            <div>
-              <span className="font-bold text-red-500">Réponses incorrectes :</span> {incorrectAnswers}
-            </div>
-          </div>
-          <div className="mt-4 flex flex-wrap justify-center gap-2">
+        <GameHUD
+          elapsedTime={elapsedTime}
+          formatTime={formatTime}
+          correctAnswers={correctAnswers}
+          incorrectAnswers={incorrectAnswers}
+        >
+          <div className="flex flex-wrap justify-center gap-2">
             {operationsList.map((op) => (
               <button
                 key={op.key}
@@ -196,7 +175,7 @@ const GameMathematiques = () => {
               Chiffres doubles
             </button>
           </div>
-        </aside>
+        </GameHUD>
         {question && (
           <section className="flex flex-1 flex-col items-center rounded-xl border border-white/20 bg-white/95 p-6 shadow-md backdrop-blur-sm">
             <h2 className="mb-4 text-center text-xl font-bold text-blue-700">Question {totalQuestions + 1}</h2>
