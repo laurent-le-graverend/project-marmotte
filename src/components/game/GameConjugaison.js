@@ -1,4 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
+import GameSetup from '@/components/game/GameSetup';
+import SessionStats from '@/components/game/SessionStats';
+import GameHUD from '@/components/ui/GameHUD';
+import useGameTimer from '@/hooks/useGameTimer';
 
 import { getPlayerName, getScore, setScore } from '../../lib/storage';
 
@@ -68,39 +73,50 @@ const getRandomQuestion = (mode) => {
 };
 
 const GameConjugaison = () => {
-  const [mode, setMode] = useState('simple');
+  // Session state management
+  const [gameState, setGameState] = useState('setup'); // 'setup', 'playing', 'stats'
+  const [sessionConfig, setSessionConfig] = useState({
+    mode: 'simple',
+    totalQuestions: null, // null for free play
+  });
+
+  // Game state
   const [question, setQuestion] = useState(null);
   const [answer, setAnswer] = useState('');
   const [feedback, setFeedback] = useState('');
   const [currentScore, setCurrentScore] = useState(() => getScore());
   const [isChecking, setIsChecking] = useState(false);
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const timerRef = useRef(null);
 
-  const [totalQuestions, setTotalQuestions] = useState(0);
+  // Session tracking
+  const [currentQuestion, setCurrentQuestion] = useState(1);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [incorrectAnswers, setIncorrectAnswers] = useState(0);
+  const [sessionStartTime, setSessionStartTime] = useState(null);
 
-  const formatTime = (seconds) => {
-    const m = Math.floor(seconds / 60)
-      .toString()
-      .padStart(2, '0');
-    const s = (seconds % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
+  // Use the custom timer hook
+  const { elapsedTime, formatTime } = useGameTimer(question);
+
+  // Start a new game with the selected configuration
+  const startGame = () => {
+    setGameState('playing');
+    setCurrentQuestion(1);
+    setCorrectAnswers(0);
+    setIncorrectAnswers(0);
+    setSessionStartTime(Date.now());
+    setQuestion(getRandomQuestion(sessionConfig.mode));
   };
 
-  useEffect(() => {
-    setQuestion(getRandomQuestion(mode));
-  }, [mode]);
+  // Quit the current session
+  const quitSession = () => {
+    setGameState('stats');
+  };
 
+  // Check if session should end (when total questions limit reached)
   useEffect(() => {
-    setElapsedTime(0);
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
-      setElapsedTime((prev) => prev + 1);
-    }, 1000);
-    return () => clearInterval(timerRef.current);
-  }, [question]);
+    if (gameState === 'playing' && sessionConfig.totalQuestions && currentQuestion > sessionConfig.totalQuestions) {
+      setGameState('stats');
+    }
+  }, [currentQuestion, sessionConfig.totalQuestions, gameState]);
 
   const removeSubject = (input) => {
     const pronouns = ['je', "j'", 'tu', 'il', 'elle', 'il/elle', 'nous', 'vous', 'ils', 'elles', 'ils/elles'];
@@ -119,7 +135,6 @@ const GameConjugaison = () => {
     if (!question || isChecking) return;
 
     setIsChecking(true);
-    setTotalQuestions((prev) => prev + 1);
 
     const userAnswer = removeSubject(answer.trim().toLowerCase());
     const correctAnswer = question.solution.toLowerCase();
@@ -136,50 +151,140 @@ const GameConjugaison = () => {
     }
 
     setTimeout(() => {
-      setQuestion(getRandomQuestion(mode));
-      setAnswer('');
-      setFeedback('');
-      setIsChecking(false);
+      // Check if we've reached the question limit
+      if (sessionConfig.totalQuestions && currentQuestion >= sessionConfig.totalQuestions) {
+        setGameState('stats');
+      } else {
+        setQuestion(getRandomQuestion(sessionConfig.mode));
+        setCurrentQuestion((prev) => prev + 1);
+        setAnswer('');
+        setFeedback('');
+        setIsChecking(false);
+      }
     }, 2500);
   };
 
+  // Reset to setup screen
+  const resetToSetup = () => {
+    setGameState('setup');
+    setQuestion(null);
+    setAnswer('');
+    setFeedback('');
+    setIsChecking(false);
+  };
+
+  // Setup screen
+  if (gameState === 'setup') {
+    return (
+      <GameSetup
+        title="Configuration - Jeu de Conjugaison"
+        onStartGame={startGame}
+        canStart={true}
+      >
+        <div>
+          <h3 className="mb-3 font-bold text-gray-700">Mode de difficulté :</h3>
+          <div className="flex gap-2">
+            <button
+              className={`flex-1 rounded-lg px-4 py-2 font-bold ${
+                sessionConfig.mode === 'simple' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-blue-700'
+              }`}
+              onClick={() => setSessionConfig((prev) => ({ ...prev, mode: 'simple' }))}
+            >
+              Simple (être, avoir)
+            </button>
+            <button
+              className={`flex-1 rounded-lg px-4 py-2 font-bold ${
+                sessionConfig.mode === 'advanced' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-blue-700'
+              }`}
+              onClick={() => setSessionConfig((prev) => ({ ...prev, mode: 'advanced' }))}
+            >
+              Avancé (tous verbes)
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="mb-3 font-bold text-gray-700">Nombre de questions :</h3>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              className={`rounded-lg px-4 py-2 font-bold ${
+                sessionConfig.totalQuestions === null ? 'bg-green-500 text-white' : 'bg-gray-200 text-blue-700'
+              }`}
+              onClick={() => setSessionConfig((prev) => ({ ...prev, totalQuestions: null }))}
+            >
+              Jeu libre
+            </button>
+            <button
+              className={`rounded-lg px-4 py-2 font-bold ${
+                sessionConfig.totalQuestions === 10 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-blue-700'
+              }`}
+              onClick={() => setSessionConfig((prev) => ({ ...prev, totalQuestions: 10 }))}
+            >
+              10 questions
+            </button>
+            <button
+              className={`rounded-lg px-4 py-2 font-bold ${
+                sessionConfig.totalQuestions === 20 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-blue-700'
+              }`}
+              onClick={() => setSessionConfig((prev) => ({ ...prev, totalQuestions: 20 }))}
+            >
+              20 questions
+            </button>
+            <button
+              className={`rounded-lg px-4 py-2 font-bold ${
+                sessionConfig.totalQuestions === 50 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-blue-700'
+              }`}
+              onClick={() => setSessionConfig((prev) => ({ ...prev, totalQuestions: 50 }))}
+            >
+              50 questions
+            </button>
+          </div>
+        </div>
+      </GameSetup>
+    );
+  }
+
+  // Stats screen
+  if (gameState === 'stats') {
+    const totalSessionTime = Math.round((Date.now() - sessionStartTime) / 1000);
+    const totalAnswered = correctAnswers + incorrectAnswers;
+
+    return (
+      <SessionStats
+        totalQuestions={totalAnswered}
+        correctAnswers={correctAnswers}
+        incorrectAnswers={incorrectAnswers}
+        totalTime={totalSessionTime}
+        onPlayAgain={resetToSetup}
+        onBackToMenu={() => window.history.back()}
+        breakdown={{
+          Mode: sessionConfig.mode === 'simple' ? 'Simple (être, avoir)' : 'Avancé (tous verbes)',
+          'Type de session': sessionConfig.totalQuestions ? `${sessionConfig.totalQuestions} questions` : 'Jeu libre',
+        }}
+      />
+    );
+  }
+
+  // Playing screen
   if (!question) return <div className="flex h-96 items-center justify-center">Chargement…</div>;
 
   return (
     <main className="flex min-h-[70vh] flex-col items-center justify-center py-8">
       <div className="flex w-full max-w-lg flex-col gap-6">
-        <aside className="flex flex-1 flex-col items-center rounded-xl border border-white/20 bg-white/95 p-6 shadow-md backdrop-blur-sm">
-          <h2 className="mb-4 text-center text-xl font-bold text-blue-700">Partie en cours</h2>
-          <div className="flex w-full flex-col gap-2 text-lg text-gray-700">
-            <div>
-              <span className="font-bold">Temps passé :</span> {formatTime(elapsedTime)}
-            </div>
-            <div>
-              <span className="font-bold text-green-600">Réponses correctes :</span> {correctAnswers}
-            </div>
-            <div>
-              <span className="font-bold text-red-500">Réponses incorrectes :</span> {incorrectAnswers}
-            </div>
-          </div>
-          <div className="mt-4 flex gap-2">
-            <button
-              className={`rounded-lg px-4 py-2 font-bold ${mode === 'simple' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-blue-700'}`}
-              onClick={() => setMode('simple')}
-              disabled={mode === 'simple'}
-            >
-              Simple
-            </button>
-            <button
-              className={`rounded-lg px-4 py-2 font-bold ${mode === 'advanced' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-blue-700'}`}
-              onClick={() => setMode('advanced')}
-              disabled={mode === 'advanced'}
-            >
-              Avancé
-            </button>
-          </div>
-        </aside>
+        <GameHUD
+          elapsedTime={elapsedTime}
+          formatTime={formatTime}
+          correctAnswers={correctAnswers}
+          incorrectAnswers={incorrectAnswers}
+          currentQuestion={currentQuestion}
+          totalQuestions={sessionConfig.totalQuestions}
+          onQuit={quitSession}
+        />
         <section className="flex flex-1 flex-col items-center rounded-xl border border-white/20 bg-white/95 p-6 shadow-md backdrop-blur-sm">
-          <h2 className="mb-4 text-center text-xl font-bold text-blue-700">Question {totalQuestions + 1}</h2>
+          <h2 className="mb-4 text-center text-xl font-bold text-blue-700">
+            Question {currentQuestion}
+            {sessionConfig.totalQuestions && ` / ${sessionConfig.totalQuestions}`}
+          </h2>
           <h2 className="mb-4 text-center text-lg font-bold text-gray-800">
             Conjugue <span className="font-extrabold text-blue-600">&quot;{question.verbe}&quot;</span> <br />
             au temps <span className="font-extrabold text-green-600">&quot;{question.temps}&quot;</span> <br />

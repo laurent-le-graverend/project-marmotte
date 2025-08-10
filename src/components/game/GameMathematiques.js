@@ -1,5 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
+import GameSetup from '@/components/game/GameSetup';
+import SessionStats from '@/components/game/SessionStats';
+import GameHUD from '@/components/ui/GameHUD';
+import useGameTimer from '@/hooks/useGameTimer';
 import { getScore, setScore } from '@/lib/storage';
 
 const operationsList = [
@@ -55,75 +59,97 @@ const generateQuestion = (enabledOps, digits) => {
 };
 
 const GameMathematiques = () => {
-  const [enabledOps, setEnabledOps] = useState({
-    add: true,
-    sub: true,
-    mul: false,
-    div: false,
+  // Session state management
+  const [gameState, setGameState] = useState('setup'); // 'setup', 'playing', 'stats'
+  const [sessionConfig, setSessionConfig] = useState({
+    enabledOps: {
+      add: true,
+      sub: true,
+      mul: false,
+      div: false,
+    },
+    digits: 'single',
+    totalQuestions: null, // null for free play
   });
-  const [digits, setDigits] = useState('single');
+
+  // Game state
   const [question, setQuestion] = useState(null);
   const [userAnswer, setUserAnswer] = useState('');
   const [feedback, setFeedback] = useState('');
   const [isChecking, setIsChecking] = useState(false);
   const [currentScore, setCurrentScore] = useState(0);
-  const [totalQuestions, setTotalQuestions] = useState(0);
+
+  // Session tracking
+  const [currentQuestion, setCurrentQuestion] = useState(1);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [incorrectAnswers, setIncorrectAnswers] = useState(0);
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const timerRef = useRef(null);
+  const [sessionStartTime, setSessionStartTime] = useState(null);
+  const [operatorStats, setOperatorStats] = useState({});
 
-  useEffect(() => {
-    setQuestion(generateQuestion(enabledOps, digits));
-    setUserAnswer('');
-    setFeedback('');
-    setIsChecking(false);
-    setTotalQuestions(0);
+  // Use the custom timer hook
+  const { elapsedTime, formatTime } = useGameTimer(question);
+
+  // Start a new game with the selected configuration
+  const startGame = () => {
+    setGameState('playing');
+    setCurrentQuestion(1);
     setCorrectAnswers(0);
     setIncorrectAnswers(0);
     setCurrentScore(0);
-  }, [enabledOps, digits]);
-
-  useEffect(() => {
-    setElapsedTime(0);
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
-      setElapsedTime((prev) => prev + 1);
-    }, 1000);
-    return () => clearInterval(timerRef.current);
-  }, [question]);
-
-  const formatTime = (seconds) => {
-    const m = Math.floor(seconds / 60)
-      .toString()
-      .padStart(2, '0');
-    const s = (seconds % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
+    setOperatorStats({});
+    setSessionStartTime(Date.now());
+    setQuestion(generateQuestion(sessionConfig.enabledOps, sessionConfig.digits));
   };
 
+  // Quit the current session
+  const quitSession = () => {
+    setGameState('stats');
+  };
+
+  // Check if session should end (when total questions limit reached)
+  useEffect(() => {
+    if (gameState === 'playing' && sessionConfig.totalQuestions && currentQuestion > sessionConfig.totalQuestions) {
+      setGameState('stats');
+    }
+  }, [currentQuestion, sessionConfig.totalQuestions, gameState]);
+
   const handleToggleOp = (key) => {
-    setEnabledOps((prev) => {
-      const enabledCount = Object.values(prev).filter(Boolean).length;
-      if (prev[key] && enabledCount === 1) {
+    setSessionConfig((prev) => {
+      const newEnabledOps = { ...prev.enabledOps };
+      const enabledCount = Object.values(newEnabledOps).filter(Boolean).length;
+      if (newEnabledOps[key] && enabledCount === 1) {
         // Prevent disabling the last enabled operation
         return prev;
       }
-      return {
-        ...prev,
-        [key]: !prev[key],
-      };
+      newEnabledOps[key] = !newEnabledOps[key];
+      return { ...prev, enabledOps: newEnabledOps };
     });
   };
 
-  const handleDigitsChange = (val) => setDigits(val);
+  const handleDigitsChange = (val) => {
+    setSessionConfig((prev) => ({ ...prev, digits: val }));
+  };
+
+  const canStartGame = () => {
+    return Object.values(sessionConfig.enabledOps).some(Boolean);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!question || isChecking) return;
     setIsChecking(true);
-    setTotalQuestions((q) => q + 1);
 
     const correct = Number(userAnswer) === question.answer;
+
+    // Update operator stats
+    setOperatorStats((prev) => ({
+      ...prev,
+      [question.op]: {
+        correct: (prev[question.op]?.correct || 0) + (correct ? 1 : 0),
+        total: (prev[question.op]?.total || 0) + 1,
+      },
+    }));
+
     if (correct) {
       setFeedback('🎉 Bravo ! 🎉');
       setCorrectAnswers((c) => c + 1);
@@ -135,35 +161,44 @@ const GameMathematiques = () => {
     }
 
     setTimeout(() => {
-      setQuestion(generateQuestion(enabledOps, digits));
-      setUserAnswer('');
-      setFeedback('');
-      setIsChecking(false);
+      // Check if we've reached the question limit
+      if (sessionConfig.totalQuestions && currentQuestion >= sessionConfig.totalQuestions) {
+        setGameState('stats');
+      } else {
+        setQuestion(generateQuestion(sessionConfig.enabledOps, sessionConfig.digits));
+        setCurrentQuestion((prev) => prev + 1);
+        setUserAnswer('');
+        setFeedback('');
+        setIsChecking(false);
+      }
     }, 2500);
   };
 
-  return (
-    <main className="flex min-h-[70vh] flex-col items-center justify-center py-8">
-      <div className="flex w-full max-w-lg flex-col gap-6">
-        <aside className="flex flex-1 flex-col items-center rounded-xl border border-white/20 bg-white/95 p-6 shadow-md backdrop-blur-sm">
-          <h2 className="mb-4 text-center text-xl font-bold text-blue-700">Partie en cours</h2>
-          <div className="flex w-full flex-col gap-2 text-lg text-gray-700">
-            <div>
-              <span className="font-bold">Temps passé :</span> {formatTime(elapsedTime)}
-            </div>
-            <div>
-              <span className="font-bold text-green-600">Réponses correctes :</span> {correctAnswers}
-            </div>
-            <div>
-              <span className="font-bold text-red-500">Réponses incorrectes :</span> {incorrectAnswers}
-            </div>
-          </div>
-          <div className="mt-4 flex flex-wrap justify-center gap-2">
+  // Reset to setup screen
+  const resetToSetup = () => {
+    setGameState('setup');
+    setQuestion(null);
+    setUserAnswer('');
+    setFeedback('');
+    setIsChecking(false);
+  };
+
+  // Setup screen
+  if (gameState === 'setup') {
+    return (
+      <GameSetup
+        title="Configuration - Jeu de Mathématiques"
+        onStartGame={startGame}
+        canStart={canStartGame()}
+      >
+        <div>
+          <h3 className="mb-3 font-bold text-gray-700">Opérations :</h3>
+          <div className="flex flex-wrap justify-center gap-2">
             {operationsList.map((op) => (
               <button
                 key={op.key}
                 className={`rounded-lg border-2 px-4 py-1 text-2xl font-bold transition ${
-                  enabledOps[op.key]
+                  sessionConfig.enabledOps[op.key]
                     ? 'border-blue-500 bg-blue-500 text-white'
                     : 'border-blue-300 bg-gray-100 text-blue-700'
                 }`}
@@ -174,32 +209,121 @@ const GameMathematiques = () => {
               </button>
             ))}
           </div>
-          <div className="mt-4 flex justify-center gap-2">
+        </div>
+
+        <div>
+          <h3 className="mb-3 font-bold text-gray-700">Difficulté :</h3>
+          <div className="flex gap-2">
             <button
-              className={`rounded-lg px-4 py-2 font-bold ${
-                digits === 'single' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-blue-700'
+              className={`flex-1 rounded-lg px-4 py-2 font-bold ${
+                sessionConfig.digits === 'single' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-blue-700'
               }`}
               onClick={() => handleDigitsChange('single')}
-              disabled={digits === 'single'}
               type="button"
             >
-              Chiffres simples
+              Chiffres simples (1-9)
+            </button>
+            <button
+              className={`flex-1 rounded-lg px-4 py-2 font-bold ${
+                sessionConfig.digits === 'double' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-blue-700'
+              }`}
+              onClick={() => handleDigitsChange('double')}
+              type="button"
+            >
+              Chiffres doubles (10-99)
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="mb-3 font-bold text-gray-700">Nombre de questions :</h3>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              className={`rounded-lg px-4 py-2 font-bold ${
+                sessionConfig.totalQuestions === null ? 'bg-green-500 text-white' : 'bg-gray-200 text-blue-700'
+              }`}
+              onClick={() => setSessionConfig((prev) => ({ ...prev, totalQuestions: null }))}
+            >
+              Jeu libre
             </button>
             <button
               className={`rounded-lg px-4 py-2 font-bold ${
-                digits === 'double' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-blue-700'
+                sessionConfig.totalQuestions === 10 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-blue-700'
               }`}
-              onClick={() => handleDigitsChange('double')}
-              disabled={digits === 'double'}
-              type="button"
+              onClick={() => setSessionConfig((prev) => ({ ...prev, totalQuestions: 10 }))}
             >
-              Chiffres doubles
+              10 questions
+            </button>
+            <button
+              className={`rounded-lg px-4 py-2 font-bold ${
+                sessionConfig.totalQuestions === 20 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-blue-700'
+              }`}
+              onClick={() => setSessionConfig((prev) => ({ ...prev, totalQuestions: 20 }))}
+            >
+              20 questions
+            </button>
+            <button
+              className={`rounded-lg px-4 py-2 font-bold ${
+                sessionConfig.totalQuestions === 50 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-blue-700'
+              }`}
+              onClick={() => setSessionConfig((prev) => ({ ...prev, totalQuestions: 50 }))}
+            >
+              50 questions
             </button>
           </div>
-        </aside>
+        </div>
+      </GameSetup>
+    );
+  }
+
+  // Stats screen
+  if (gameState === 'stats') {
+    const totalSessionTime = Math.round((Date.now() - sessionStartTime) / 1000);
+    const totalAnswered = correctAnswers + incorrectAnswers;
+
+    // Build operator breakdown
+    const operatorBreakdown = {};
+    Object.entries(operatorStats).forEach(([op, stats]) => {
+      const accuracy = Math.round((stats.correct / stats.total) * 100);
+      operatorBreakdown[op] = `${stats.correct}/${stats.total} (${accuracy}%)`;
+    });
+
+    return (
+      <SessionStats
+        totalQuestions={totalAnswered}
+        correctAnswers={correctAnswers}
+        incorrectAnswers={incorrectAnswers}
+        totalTime={totalSessionTime}
+        onPlayAgain={resetToSetup}
+        onBackToMenu={() => window.history.back()}
+        breakdown={{
+          Difficulté: sessionConfig.digits === 'single' ? 'Chiffres simples (1-9)' : 'Chiffres doubles (10-99)',
+          'Type de session': sessionConfig.totalQuestions ? `${sessionConfig.totalQuestions} questions` : 'Jeu libre',
+          ...operatorBreakdown,
+        }}
+      />
+    );
+  }
+
+  // Playing screen
+  return (
+    <main className="flex min-h-[70vh] flex-col items-center justify-center py-8">
+      <div className="flex w-full max-w-lg flex-col gap-6">
+        <GameHUD
+          elapsedTime={elapsedTime}
+          formatTime={formatTime}
+          correctAnswers={correctAnswers}
+          incorrectAnswers={incorrectAnswers}
+          currentQuestion={currentQuestion}
+          totalQuestions={sessionConfig.totalQuestions}
+          onQuit={quitSession}
+        />
         {question && (
           <section className="flex flex-1 flex-col items-center rounded-xl border border-white/20 bg-white/95 p-6 shadow-md backdrop-blur-sm">
-            <h2 className="mb-4 text-center text-xl font-bold text-blue-700">Question {totalQuestions + 1}</h2>
+            <h2 className="mb-4 text-center text-xl font-bold text-blue-700">
+              Question {currentQuestion}
+              {sessionConfig.totalQuestions && ` / ${sessionConfig.totalQuestions}`}
+            </h2>
             <h2 className="mb-4 text-center text-lg font-bold text-gray-800">
               Résous : <span className="font-extrabold text-blue-600">{question.question}</span>
             </h2>
