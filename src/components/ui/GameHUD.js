@@ -39,7 +39,7 @@ const GameHUD = ({
 
       <div className="flex w-full flex-col gap-2 text-lg text-gray-700">
         <div>
-          <span className="font-bold">Progress :</span>{' '}
+          <span className="font-bold">Progrès :</span>{' '}
           {totalQuestions ? (
             <span>
               {currentQuestion} / {totalQuestions}

@@ -303,8 +303,8 @@ const GameConjugaison = () => {
           </h2>
           <h2 className="mb-4 text-center text-lg font-bold text-gray-800">
             Conjugue <span className="font-extrabold text-blue-600">&quot;{question.verbe}&quot;</span> <br />
-            au temps <span className="font-extrabold text-green-600">&quot;{question.temps}&quot;</span> <br />
-            pour le sujet <span className="font-extrabold text-pink-600">&quot;{question.sujet}&quot;</span>
+            au <span className="font-extrabold text-green-600">&quot;{question.temps}&quot;</span> <br />
+            avec <span className="font-extrabold text-pink-600">&quot;{question.sujet}&quot;</span>
           </h2>
           <form
             onSubmit={checkAnswer}
