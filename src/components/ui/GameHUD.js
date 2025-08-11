@@ -28,7 +28,7 @@ const GameHUD = ({
   return (
     <aside className="flex flex-1 flex-col items-center rounded-xl border border-white/20 bg-white/95 p-6 shadow-md backdrop-blur-sm">
       <div className="mb-6 flex w-full items-center justify-between">
-        <h2 className="text-center text-xl font-bold text-blue-700  text-center block">
+        <h2 className="block text-center text-xl font-bold text-blue-700">
           {totalQuestions ? (
             <span>
               Question {currentQuestion} / {totalQuestions}
@@ -45,8 +45,8 @@ const GameHUD = ({
         </button>
       </div>
 
-      <div className="flex w-full flex-col gap-2 text-lg text-gray-700 text-center">
-        <div className="flex  flex-row gap-2 text-lg text-gray-700 font-bold text-xl justify-around">
+      <div className="flex w-full flex-col gap-2 text-center text-lg text-gray-700">
+        <div className="flex flex-row justify-around gap-2 text-lg text-xl font-bold text-gray-700">
           <div className="w-16 text-center">{formatTime(elapsedTime)}</div>
           <div className="w-16 text-center text-emerald-700">✓ {correctAnswers} </div>
           <div className="w-16 text-center text-rose-700">✗ {incorrectAnswers}</div>
