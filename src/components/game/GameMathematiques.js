@@ -336,12 +336,8 @@ const GameMathematiques = () => {
         />
         {question && (
           <section className="flex flex-1 flex-col items-center rounded-xl border border-white/20 bg-white/95 p-4 shadow-md backdrop-blur-sm md:p-6">
-            <h2 className="mb-4 text-center text-xl font-bold text-blue-700">
-              Question {currentQuestion}
-              {sessionConfig.totalQuestions && ` / ${sessionConfig.totalQuestions}`}
-            </h2>
             <h2 className="mb-4 text-center text-lg font-bold text-gray-800">
-              Résous : <span className="font-extrabold text-blue-600">{question.question}</span>
+              Calcule : <span className="font-extrabold text-blue-600">{question.question}</span>
             </h2>
             <form
               onSubmit={handleSubmit}
@@ -365,7 +361,7 @@ const GameMathematiques = () => {
                 Valider
               </button>
             </form>
-            <p className="mt-4 text-center text-xl font-semibold">{feedback}&nbsp;</p>
+            <p className="mt-4 text-center text-lg font-semibold">{feedback}&nbsp;</p>
           </section>
         )}
       </div>

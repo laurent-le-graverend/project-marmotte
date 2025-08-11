@@ -297,13 +297,10 @@ const GameConjugaison = () => {
           onQuit={quitSession}
         />
         <section className="flex flex-1 flex-col items-center rounded-xl border border-white/20 bg-white/95 p-4 shadow-md backdrop-blur-sm md:p-6">
-          <h2 className="mb-4 text-center text-xl font-bold text-blue-700">
-            Question {currentQuestion}
-            {sessionConfig.totalQuestions && ` / ${sessionConfig.totalQuestions}`}
-          </h2>
           <h2 className="mb-4 text-center text-lg font-bold text-gray-800">
-            Conjugue <span className="font-extrabold text-blue-600">&quot;{question.verbe}&quot;</span> <br />
-            au <span className="font-extrabold text-green-600">&quot;{question.temps}&quot;</span> <br />
+            Conjugue <span className="font-extrabold text-blue-600">&quot;{question.verbe}&quot;</span>{' '}
+            {question.temps[0].toLowerCase().match(/[aeiouy]/) ? "à l’" : "au "}
+            <span className="font-extrabold text-green-600">&quot;{question.temps}&quot;</span>{' '}
             avec <span className="font-extrabold text-pink-600">&quot;{question.sujet}&quot;</span>
           </h2>
           <form
@@ -331,7 +328,7 @@ const GameConjugaison = () => {
               Valider
             </button>
           </form>
-          <p className="mt-4 text-center text-xl font-semibold">{feedback}&nbsp;</p>
+          <p className="mt-4 text-center text-lg font-semibold">{feedback}&nbsp;</p>
         </section>
       </div>
     </main>

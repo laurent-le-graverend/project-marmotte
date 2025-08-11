@@ -27,47 +27,29 @@ const GameHUD = ({
 
   return (
     <aside className="flex flex-1 flex-col items-center rounded-xl border border-white/20 bg-white/95 p-6 shadow-md backdrop-blur-sm">
-      <div className="mb-4 flex w-full items-center justify-between">
-        <h2 className="text-center text-xl font-bold text-blue-700">Partie en cours</h2>
+      <div className="mb-6 flex w-full items-center justify-between">
+        <h2 className="text-center text-xl font-bold text-blue-700  text-center block">
+          {totalQuestions ? (
+            <span>
+              Question {currentQuestion} / {totalQuestions}
+            </span>
+          ) : (
+            <span>Question {currentQuestion} (Jeu libre)</span>
+          )}
+        </h2>
         <button
           onClick={onQuit}
-          className="rounded-lg bg-red-500 px-3 py-1 text-sm font-bold text-white transition hover:bg-red-600"
+          className="ml-auto rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-sm font-semibold text-rose-700 hover:bg-rose-100"
         >
           Quitter
         </button>
       </div>
 
-      <div className="flex w-full flex-col gap-2 text-lg text-gray-700">
-        <div>
-          <span className="font-bold">Progrès :</span>{' '}
-          {totalQuestions ? (
-            <span>
-              {currentQuestion} / {totalQuestions}
-            </span>
-          ) : (
-            <span>Jeu libre (Question {currentQuestion})</span>
-          )}
-        </div>
-
-        {totalQuestions && (
-          <div className="w-full">
-            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
-              <div
-                className="h-full bg-blue-500 transition-all duration-300"
-                style={{ width: `${progressPercentage}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-        <div>
-          <span className="font-bold">Temps passé :</span> {formatTime(elapsedTime)}
-        </div>
-        <div>
-          <span className="font-bold text-green-600">Réponses correctes :</span> {correctAnswers}
-        </div>
-        <div>
-          <span className="font-bold text-red-500">Réponses incorrectes :</span> {incorrectAnswers}
+      <div className="flex w-full flex-col gap-2 text-lg text-gray-700 text-center">
+        <div className="flex  flex-row gap-2 text-lg text-gray-700 font-bold text-xl justify-around">
+          <div className="w-16 text-center">{formatTime(elapsedTime)}</div>
+          <div className="w-16 text-center text-emerald-700">✓ {correctAnswers} </div>
+          <div className="w-16 text-center text-rose-700">✗ {incorrectAnswers}</div>
         </div>
       </div>
       {children && <div className="mt-4">{children}</div>}
