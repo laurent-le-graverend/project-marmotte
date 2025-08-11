@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 
 import PageLayout from '@/components/ui/PageLayout';
@@ -8,10 +9,16 @@ const GamePage = () => (
   <PageLayout>
     <main className="flex min-h-screen flex-col items-center justify-center px-4">
       <section className="flex w-full max-w-md flex-col items-center gap-8 rounded-xl border border-white/20 bg-white/95 p-4 shadow-lg backdrop-blur-sm md:p-8">
-        <div className="group inline-block cursor-pointer text-5xl">
-          <span className="inline-block group-hover:animate-[roll_0.8s_linear_infinite]">🎲</span>
+        <div className="mb-2 flex items-center gap-2">
+          <Image
+            src="/images/beaver-waiting.png"
+            alt="Beaver mascot giving thumbs up"
+            width={108}
+            height={135}
+            priority
+          />
         </div>
-        <h1 className="text-center text-2xl font-bold text-blue-700">Choisis ton jeu</h1>
+        <h1 className="mb-2 text-center text-3xl font-extrabold text-blue-600">Choisis ton jeu :</h1>
         <div className="flex w-full flex-col gap-4">
           <Link
             href="/game/conjugaison"
