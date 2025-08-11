@@ -85,6 +85,7 @@ const GameMathematiques = () => {
   const [incorrectAnswers, setIncorrectAnswers] = useState(0);
   const [sessionStartTime, setSessionStartTime] = useState(null);
   const [operatorStats, setOperatorStats] = useState({});
+  const [finalSessionTime, setFinalSessionTime] = useState(null);
 
   // Use the custom timer hook
   const { elapsedTime, formatTime } = useGameTimer(question);
@@ -97,21 +98,30 @@ const GameMathematiques = () => {
     setIncorrectAnswers(0);
     setCurrentScore(0);
     setOperatorStats({});
+    setFinalSessionTime(null);
     setSessionStartTime(Date.now());
     setQuestion(generateQuestion(sessionConfig.enabledOps, sessionConfig.digits));
   };
 
   // Quit the current session
   const quitSession = () => {
+    // Calculate and store the final session time when quitting
+    if (sessionStartTime && !finalSessionTime) {
+      setFinalSessionTime(Math.round((Date.now() - sessionStartTime) / 1000));
+    }
     setGameState('stats');
   };
 
   // Check if session should end (when total questions limit reached)
   useEffect(() => {
     if (gameState === 'playing' && sessionConfig.totalQuestions && currentQuestion > sessionConfig.totalQuestions) {
+      // Calculate and store the final session time when game ends naturally
+      if (sessionStartTime && !finalSessionTime) {
+        setFinalSessionTime(Math.round((Date.now() - sessionStartTime) / 1000));
+      }
       setGameState('stats');
     }
-  }, [currentQuestion, sessionConfig.totalQuestions, gameState]);
+  }, [currentQuestion, sessionConfig.totalQuestions, gameState, sessionStartTime, finalSessionTime]);
 
   const handleToggleOp = (key) => {
     setSessionConfig((prev) => {
@@ -163,6 +173,10 @@ const GameMathematiques = () => {
     setTimeout(() => {
       // Check if we've reached the question limit
       if (sessionConfig.totalQuestions && currentQuestion >= sessionConfig.totalQuestions) {
+        // Calculate and store the final session time when game ends
+        if (sessionStartTime && !finalSessionTime) {
+          setFinalSessionTime(Math.round((Date.now() - sessionStartTime) / 1000));
+        }
         setGameState('stats');
       } else {
         setQuestion(generateQuestion(sessionConfig.enabledOps, sessionConfig.digits));
@@ -181,6 +195,7 @@ const GameMathematiques = () => {
     setUserAnswer('');
     setFeedback('');
     setIsChecking(false);
+    setFinalSessionTime(null);
   };
 
   // Setup screen
@@ -278,7 +293,8 @@ const GameMathematiques = () => {
 
   // Stats screen
   if (gameState === 'stats') {
-    const totalSessionTime = Math.round((Date.now() - sessionStartTime) / 1000);
+    // Use the stored final session time instead of calculating it continuously
+    const totalSessionTime = finalSessionTime || Math.round((Date.now() - sessionStartTime) / 1000);
     const totalAnswered = correctAnswers + incorrectAnswers;
 
     // Build operator breakdown

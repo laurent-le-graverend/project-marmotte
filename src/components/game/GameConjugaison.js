@@ -92,6 +92,7 @@ const GameConjugaison = () => {
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [incorrectAnswers, setIncorrectAnswers] = useState(0);
   const [sessionStartTime, setSessionStartTime] = useState(null);
+  const [finalSessionTime, setFinalSessionTime] = useState(null);
 
   // Use the custom timer hook
   const { elapsedTime, formatTime } = useGameTimer(question);
@@ -102,21 +103,30 @@ const GameConjugaison = () => {
     setCurrentQuestion(1);
     setCorrectAnswers(0);
     setIncorrectAnswers(0);
+    setFinalSessionTime(null);
     setSessionStartTime(Date.now());
     setQuestion(getRandomQuestion(sessionConfig.mode));
   };
 
   // Quit the current session
   const quitSession = () => {
+    // Calculate and store the final session time when quitting
+    if (sessionStartTime && !finalSessionTime) {
+      setFinalSessionTime(Math.round((Date.now() - sessionStartTime) / 1000));
+    }
     setGameState('stats');
   };
 
   // Check if session should end (when total questions limit reached)
   useEffect(() => {
     if (gameState === 'playing' && sessionConfig.totalQuestions && currentQuestion > sessionConfig.totalQuestions) {
+      // Calculate and store the final session time when game ends naturally
+      if (sessionStartTime && !finalSessionTime) {
+        setFinalSessionTime(Math.round((Date.now() - sessionStartTime) / 1000));
+      }
       setGameState('stats');
     }
-  }, [currentQuestion, sessionConfig.totalQuestions, gameState]);
+  }, [currentQuestion, sessionConfig.totalQuestions, gameState, sessionStartTime, finalSessionTime]);
 
   const removeSubject = (input) => {
     const pronouns = ['je', "j'", 'tu', 'il', 'elle', 'il/elle', 'nous', 'vous', 'ils', 'elles', 'ils/elles'];
@@ -153,6 +163,10 @@ const GameConjugaison = () => {
     setTimeout(() => {
       // Check if we've reached the question limit
       if (sessionConfig.totalQuestions && currentQuestion >= sessionConfig.totalQuestions) {
+        // Calculate and store the final session time when game ends
+        if (sessionStartTime && !finalSessionTime) {
+          setFinalSessionTime(Math.round((Date.now() - sessionStartTime) / 1000));
+        }
         setGameState('stats');
       } else {
         setQuestion(getRandomQuestion(sessionConfig.mode));
@@ -171,6 +185,7 @@ const GameConjugaison = () => {
     setAnswer('');
     setFeedback('');
     setIsChecking(false);
+    setFinalSessionTime(null);
   };
 
   // Setup screen
@@ -246,7 +261,8 @@ const GameConjugaison = () => {
 
   // Stats screen
   if (gameState === 'stats') {
-    const totalSessionTime = Math.round((Date.now() - sessionStartTime) / 1000);
+    // Use the stored final session time instead of calculating it continuously
+    const totalSessionTime = finalSessionTime || Math.round((Date.now() - sessionStartTime) / 1000);
     const totalAnswered = correctAnswers + incorrectAnswers;
 
     return (
