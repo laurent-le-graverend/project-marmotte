@@ -33,8 +33,8 @@ const HomePage = () => {
 
   return (
     <PageLayout>
-      <main className="flex min-h-screen items-center justify-center">
-        <section className="flex w-full max-w-md flex-col items-center gap-6 rounded-2xl border border-white/20 bg-white/95 p-8 shadow-xl backdrop-blur-sm">
+      <main className="flex min-h-screen items-center justify-center px-4">
+        <section className="flex w-full max-w-md flex-col items-center gap-6 rounded-2xl border border-white/20 bg-white/95 p-4 shadow-xl backdrop-blur-sm md:p-8">
           <div className="mb-2 flex items-center gap-2">
             <span className="group inline-block cursor-pointer">
               <span className="inline-block -scale-x-100 text-3xl group-hover:animate-[jump_0.6s_ease-in-out_infinite]">
