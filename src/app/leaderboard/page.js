@@ -21,7 +21,7 @@ const LeaderboardPage = () => {
 
   return (
     <PageLayout>
-      <main className="flex min-h-screen flex-col items-center justify-center">
+      <main className="flex min-h-screen flex-col items-center justify-center px-4">
         <section className="w-full max-w-md rounded-2xl border border-white/20 bg-white/95 p-8 shadow-xl backdrop-blur-sm">
           <h1 className="mb-6 text-center text-3xl font-extrabold text-pink-600">🏆 Leaderboard</h1>
           {sortedScores.length === 0 ? (
