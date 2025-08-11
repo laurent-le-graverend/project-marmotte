@@ -1,6 +1,8 @@
-# Project Marmotte
+# Project Beaver
 
-This is the **Marmotte** project, a simple game web app built with **Next.js**.
+A series of games for kids 5~12 years old, as a web app built with **Next.js**, hosted on **Netlify**.
+
+![Project Beaver Identity](./.github/project-beaver-identity.png)
 
 ## 🚀 Getting Started
 

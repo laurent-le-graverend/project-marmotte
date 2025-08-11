@@ -1,8 +1,10 @@
-# Copilot Instructions for Conjugation Game Project
+# Copilot Instructions for Project Beaver
 
 ## Project Context
 
 This project is a simple French conjugation quiz game built in **Next.js 15.4+** using the **App Router**.
+
+The app features a friendly beaver mascot, which appears in the UI to provide feedback and engagement for users. All code and documentation remain in English, and internal project references use "Project Beaver".
 
 The app allows kids to:
 - Input their name
