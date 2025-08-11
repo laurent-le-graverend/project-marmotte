@@ -2,7 +2,7 @@
 
 A series of games for kids 5~12 years old, as a web app built with **Next.js**, hosted on **Netlify**.
 
-![Project Beaver Identity](./.github/project-beaver-identity.png)
+<img src="./.github/project-beaver-identity.png" alt="Project Beaver Identity" width="400" />
 
 ## 🚀 Getting Started
 
